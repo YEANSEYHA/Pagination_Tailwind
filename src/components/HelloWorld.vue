@@ -1,58 +1,72 @@
 <template>
   <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
+    <VueTailwindPagination
+      :current="currentPage"
+      :total="total"
+      :per-page="perPage"
+      @page-changed="onPageClick($event)"
+    />
   </div>
+  <table class="table table-dark table-striped">
+    <thead>
+      <tr>
+        <th scope="col">Id</th>
+        <th scope="col">Email</th>
+        <th scope="col">First Name</th>
+        <th scope="col">Last Name</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="d in data" v-bind:key="d.id">
+        <td>{{ d.id }}</td>
+        <td>{{ d.email }}</td>
+        <td>{{ d.first_name }}</td>
+        <td>{{ d.last_name }}</td>
+      </tr>
+    </tbody>
+  </table>
 </template>
 
 <script>
+import "@ocrv/vue-tailwind-pagination/dist/style.css";
+import VueTailwindPagination from "@ocrv/vue-tailwind-pagination";
+import axios from "axios";
 export default {
-  name: 'HelloWorld',
-  props: {
-    msg: String
+  components: {
+    VueTailwindPagination,
+  },
+  data() {
+    return {
+      currentPage: 0,
+      perPage: 0,
+      total: 0,
+      data: [],
+    };
+  },
+  methods: {
+    onPageClick(event) {
+      this.currentPage = event;
+      this.getData(this.currentPage);
+    },
+    async getData(pageNumber) {
+      var response = await axios.get(
+        `https://reqres.in/api/users?page=${pageNumber}`
+      );
+      var responseData = response.data;
+      this.currentPage = responseData.page;
+      this.perPage = responseData.per_page;
+      this.total = responseData.total;
+      this.data = response.data.data;
+    },
+  },
+  mounted(){
+    this.currentPage = 1;
+    this.getData(this.currentPage);
   }
-}
+};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
-}
+
 </style>
